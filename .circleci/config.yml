@@ -1,0 +1,96 @@
+# Required variables
+# REPO, IMAGE_NAME
+# PLATFORMS = linux/amd64,linux/arm64/v8,...
+# DOCKER_USER, DOCKER_PASS
+version: 2.1
+aliases:
+  - &docker
+      - image: docker:dind
+  - &steps
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.2
+      - run:
+          name: Install docker buildx
+          command: |
+            apk add --no-cache curl
+            mkdir -p ~/.docker/cli-plugins
+            baseUrl="https://github.com/docker/buildx/releases/download"
+            fileName="buildx-v<< parameters.version >>.linux-amd64"
+            url="${baseUrl}/v<< parameters.version >>/${fileName}"
+            curl -sSL -o ~/.docker/cli-plugins/docker-buildx $url
+            chmod a+x ~/.docker/cli-plugins/docker-buildx
+            echo 'export DOCKER_CLI_EXPERIMENTAL="enabled"' >> $BASH_ENV
+      - run:
+          name: Prepare docker buildx
+          command: |
+            docker buildx install
+            docker version
+            docker buildx version
+            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+            docker context create xbuilder
+            docker buildx create xbuilder --name xbuilder --use
+            docker buildx inspect --bootstrap
+      - run:
+          name: Build all platforms
+          command: |
+            docker buildx build --progress plain --platform $PLATFORMS --build-arg PYTHON_VERSION=$PYTHON_VERSION -t $REPO/$IMAGE_NAME:$TAG .
+      - run:
+          name: Build and push all platforms
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin &> /dev/null || exit 1
+              docker buildx build --progress plain --platform $PLATFORMS --build-arg PYTHON_VERSION=$PYTHON_VERSION -t $REPO/$IMAGE_NAME:$TAG --push .
+            fi
+jobs:
+  build_alpine:
+    parameters:
+      version:
+        default: 0.5.1
+        type: string
+    environment:
+      PYTHON_VERSION: alpine
+      TAG: alpine
+    docker: *docker
+    steps: *steps
+  build_alpine313:
+    parameters:
+      version:
+        default: 0.5.1
+        type: string
+    environment:
+      PYTHON_VERSION: alpine3.13
+      TAG: alpine3.13
+    docker: *docker
+    steps: *steps
+  build_alpine312:
+    parameters:
+      version:
+        default: 0.5.1
+        type: string
+    environment:
+      PYTHON_VERSION: alpine3.12
+      TAG: alpine3.12
+    docker: *docker
+    steps: *steps
+
+workflows:
+  version: 2
+  weekly:
+    triggers:
+      - schedule:
+          # mondays, 6:33 am, UTC
+          cron: "33 6 * * 1"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - build_alpine312
+      - build_alpine313
+      - build_alpine
+  build:
+    jobs:
+      - build_alpine312
+      - build_alpine313
+      - build_alpine
