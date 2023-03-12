@@ -1,7 +1,7 @@
 # [Docker image: githubtraffic](https://hub.docker.com/r/drpsychick/githubtraffic/)
 
-[![Docker image](https://img.shields.io/docker/image-size/drpsychick/githubtraffic?sort=date)](https://hub.docker.com/r/drpsychick/githubtraffic/tags) 
-[![Build Status](https://img.shields.io/circleci/build/github/DrPsychick/docker-githubtraffic)](https://app.circleci.com/pipelines/github/DrPsychick/docker-githubtraffic)
+[![Docker image](https://img.shields.io/docker/image-size/drpsychick/githubtraffic?sort=date)](https://hub.docker.com/r/drpsychick/githubtraffic/tags)
+[![Workflow Status](https://img.shields.io/github/actions/workflow/status/drpsychick/docker-githubtraffic/release.yaml)](https://github.com/DrPsychick/docker-githubtraffic/actions)
 [![license](https://img.shields.io/github/license/drpsychick/docker-githubtraffic.svg)](https://github.com/drpsychick/docker-githubtraffic/blob/master/LICENSE) 
 [![DockerHub pulls](https://img.shields.io/docker/pulls/drpsychick/githubtraffic.svg)](https://hub.docker.com/r/drpsychick/githubtraffic/) 
 [![DockerHub stars](https://img.shields.io/docker/stars/drpsychick/githubtraffic.svg)](https://hub.docker.com/r/drpsychick/githubtraffic/) 
