@@ -38,7 +38,7 @@ aliases:
       - run:
           name: Build and push all platforms
           command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+            if [ "${CIRCLE_BRANCH}" == "main" ]; then
               echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin &> /dev/null || exit 1
               docker buildx build --progress plain --platform $PLATFORMS --build-arg PYTHON_VERSION=$PYTHON_VERSION -t $REPO/$IMAGE_NAME:$TAG --push .
             fi
