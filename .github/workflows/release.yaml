@@ -1,0 +1,50 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - '*'
+#      - 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build and test
+        uses: docker/build-push-action@v4
+        with:
+          push: false
+          tags: drpsychick/githubtraffic:test
+      # TODO: test
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Bump version and push tag
+        id: version_bump
+        uses: anothrNick/github-tag-action@1.55.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DRY_RUN: true
+      - name: Print
+        run: |
+          echo "new tag: ${{ steps.version_bump.outputs.new_tag }}"
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          push: false
+          tags: drpsychick/githubtraffic:${{ steps.version_bump.outputs.new_tag }}
