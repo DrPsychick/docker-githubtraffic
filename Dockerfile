@@ -1,4 +1,4 @@
-ARG PYTHON_VERSION=alpine
+ARG PYTHON_VERSION=alpine3.17
 FROM python:$PYTHON_VERSION
 
 RUN apk --no-cache add curl gcc musl-dev libffi-dev make

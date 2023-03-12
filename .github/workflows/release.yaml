@@ -24,5 +24,6 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          push: true
+          platforms: linux/amd64,linux/arm64
           tags: drpsychick/githubtraffic:${{ steps.version_bump.outputs.new_tag }}
+          push: true
