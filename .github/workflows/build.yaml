@@ -1,0 +1,30 @@
+name: ci
+
+on:
+  pull_request:
+      types: [opened, reopened, synchronize]
+  push:
+    branches:
+      - 'main'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build image
+        uses: docker/build-push-action@v4
+        with:
+          push: false
+          tags: drpsychick/githubtraffic:test
+      - name: Test image
+        uses: addnab/docker-run-action@v3
+        with:
+          image: drpsychick/githubtraffic:test
+          run: ""
