@@ -7,8 +7,10 @@ RUN pip3 install --requirement /requirements.yml \
     && chmod +x /github-influx.sh
 
 ENV GITHUB_TOKEN="" \
+    GITHUB_DAYS="" \
     INFLUX_ULR="" \
-    INFLUX_CREDS=""
+    INFLUX_CREDS="" \
+    INFLUX_LABELS=""
 
 ENTRYPOINT ["/bin/sh"]
 CMD ["/github-influx.sh"]
