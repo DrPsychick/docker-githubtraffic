@@ -27,3 +27,4 @@ jobs:
         with:
           image: drpsychick/githubtraffic:test
           run: "/bin/sh /github-influx.sh"
+          options: "-e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}"
