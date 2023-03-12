@@ -1,72 +1,65 @@
 #!python3
 
-import datetime
 import os
 import sys
-
+import datetime
 from github import Github
 
 
-# always returns a result for yesterday and today and fills with 0 values
-def get_traffic(g):
-    today = datetime.datetime.utcnow().date()
-    yesterday = today - datetime.timedelta(days=1)
+def get_repo_stats(type, repo, days):
+    labels = ""
+    if "INFLUX_LABELS" in os.environ:
+        labels = "," + os.environ["INFLUX_LABELS"]
 
-    for repo in g.get_user().get_repos():
-        # print(repo.name)
-        stats = repo.get_views_traffic('day')
-        # print(stats)
-        lines = {}
-        for s in stats['views']:
+    today = datetime.datetime.utcnow().date()
+    try:
+        if type == 'views':
+            stats = repo.get_views_traffic('day')
+        else:
+            stats = repo.get_clones_traffic('day')
+    except Exception as e:
+        # skip repos with missing permissions
+        print(f'Failed to get stats from repo {repo} {e}', file=sys.stderr)
+        return
+
+    lines = {}
+
+    org = "None"
+    if repo.organization is not None:
+        org = repo.organization.name
+
+    # process day by day
+    while days >= 0:
+        day = today - datetime.timedelta(days)
+        days = days-1
+
+        for s in stats[type]:
             time = datetime.datetime.strptime(str(s.timestamp), "%Y-%m-%d %H:%M:%S")
 
-            if time.strftime('%Y-%m-%d') not in [yesterday.strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d')]:
+            if time.strftime('%Y-%m-%d') != day.strftime('%Y-%m-%d'):
                 continue
 
-            lines[time.strftime('%s')] = "github_views,repo=%s count=%d,unique=%d %s" % (
-                repo.name, s.count, s.uniques, time.strftime('%s'))
+            lines[time.strftime('%s')] = "github_%s,repo=%s,org=%s%s count=%d,unique=%d %s" % (
+                type, repo.name, org, labels, s.count, s.uniques, time.strftime('%s'))
         # fill with 0 values
-        if yesterday.strftime('%s') not in lines:
-            lines[yesterday.strftime('%s')] = "github_views,repo=%s count=%d,unique=%d %s" % (
-                repo.name, 0, 0, yesterday.strftime('%s'))
+        if day.strftime('%s') not in lines:
+            lines[day.strftime('%s')] = "github_%s,repo=%s,org=%s%s count=%d,unique=%d %s" % (
+                type, repo.name, org, labels, 0, 0, day.strftime('%s'))
 
-        if today.strftime('%s') not in lines:
-            lines[today.strftime('%s')] = "github_views,repo=%s count=%d,unique=%d %s" % (
-                repo.name, 0, 0, today.strftime('%s'))
-
-        for d in sorted(lines, key=lines.get):
-            print(lines[d])
+    for d in sorted(lines, key=lines.get):
+        print(lines[d])
 
 
-# always returns a result for yesterday and today and fills with 0 values
-def get_clones(g):
-    today = datetime.datetime.utcnow().date()
-    yesterday = today - datetime.timedelta(days=1)
-
+# loops over repos and gets clones stats
+def get_clones(g, days):
     for repo in g.get_user().get_repos():
-        stats = repo.get_clones_traffic('day')
-        # print(stats)
-        lines = {}
-        for s in stats['clones']:
-            time = datetime.datetime.strptime(str(s.timestamp), "%Y-%m-%d %H:%M:%S")
+        get_repo_stats('clones', repo, days)
 
-            if time.strftime('%Y-%m-%d') not in [yesterday.strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d')]:
-                continue
 
-            lines[time.strftime('%s')] = "github_clones,repo=%s count=%d,unique=%d %s" % (
-                repo.name, s.count, s.uniques, time.strftime('%s'))
-
-        # fill with 0 values
-        if yesterday.strftime('%s') not in lines:
-            lines[yesterday.strftime('%s')] = "github_clones,repo=%s count=%d,unique=%d %s" % (
-                repo.name, 0, 0, yesterday.strftime('%s'))
-
-        if today.strftime('%s') not in lines:
-            lines[today.strftime('%s')] = "github_clones,repo=%s count=%d,unique=%d %s" % (
-                repo.name, 0, 0, today.strftime('%s'))
-
-        for d in sorted(lines, key=lines.get):
-            print(lines[d])
+# loops over repos and gets views stats
+def get_traffic(g, days):
+    for repo in g.get_user().get_repos():
+        get_repo_stats('views', repo, days)
 
 
 if __name__ == "__main__":
@@ -76,14 +69,18 @@ if __name__ == "__main__":
         print('Use a personal token you can generate in:')
         print('GitHub -> Settings -> Developer Settings -> Personal access tokens')
         exit(1)
+    if "GITHUB_DAYS" in os.environ:
+        days = int(os.environ["GITHUB_DAYS"])
+    else:
+        days = 3
 
-    gh = Github(token)
+    g = Github(token)
 
     if len(sys.argv) == 1:
-        get_traffic(gh)
-        get_clones(gh)
+        get_traffic(g, days)
+        get_clones(g, days)
     else:
         if sys.argv[1] == '--traffic':
-            get_traffic(gh)
+            get_traffic(g, days)
         if sys.argv[1] == '--clones':
-            get_clones(gh)
+            get_clones(g, days)
