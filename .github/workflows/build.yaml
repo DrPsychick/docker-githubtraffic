@@ -21,6 +21,7 @@ jobs:
       - name: Build image
         uses: docker/build-push-action@v4
         with:
+          # only amd64 so the image can be loaded
           platforms: linux/amd64
           tags: drpsychick/githubtraffic:test
           push: false
