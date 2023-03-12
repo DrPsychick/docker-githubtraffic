@@ -23,7 +23,7 @@ COPY --from=builder / /
 USER python
 WORKDIR /home/python
 ENV GITHUB_TOKEN="" \
-    GITHUB_DAYS="" \
+    GITHUB_DAYS="3" \
     INFLUX_ULR="" \
     INFLUX_CREDS="" \
     INFLUX_LABELS=""
