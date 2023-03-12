@@ -1,14 +1,17 @@
-name: ci
+name: Release
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - "Build"
     branches:
-      - 'main'
+      - main
+    types:
+      - completed
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    needs: build
     steps:
       - name: Bump version and push tag
         id: version_bump
