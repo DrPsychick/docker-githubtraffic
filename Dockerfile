@@ -1,12 +1,10 @@
 ARG PYTHON_VERSION=alpine3.17
 FROM python:$PYTHON_VERSION AS builder
 
-RUN apk --no-cache add curl gcc musl-dev libffi-dev make
-COPY github-influx.* /
+RUN apk --no-cache add curl gcc musl-dev libffi-dev make jq
 
 RUN addgroup -S python && \
-    adduser -S python -G python && \
-    chmod +x /github-influx.sh
+    adduser -S python -G python
 
 USER python
 COPY requirements.yml /home/python
@@ -19,6 +17,8 @@ RUN apk --purge del gcc musl-dev libffi-dev make
 
 FROM scratch
 COPY --from=builder / /
+COPY github-influx.* /
+RUN chmod +x /github-influx.sh
 
 USER python
 WORKDIR /home/python
