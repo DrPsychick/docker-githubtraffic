@@ -8,7 +8,7 @@ from github import Github
 
 def get_repo_stats(type, repo, days):
     labels = ""
-    if "INFLUX_LABELS" in os.environ:
+    if "INFLUX_LABELS" in os.environ and os.environ["INFLUX_LABELS"] != "":
         labels = "," + os.environ["INFLUX_LABELS"]
 
     today = datetime.datetime.utcnow().date()
@@ -40,11 +40,11 @@ def get_repo_stats(type, repo, days):
                 continue
 
             lines[time.strftime('%s')] = "github_%s,repo=%s,org=%s%s count=%d,unique=%d %s" % (
-                type, repo.name.replace(".", ""), org, labels, s.count, s.uniques, time.strftime('%s'))
+                type, repo.name, org, labels, s.count, s.uniques, time.strftime('%s'))
         # fill with 0 values
         if day.strftime('%s') not in lines:
             lines[day.strftime('%s')] = "github_%s,repo=%s,org=%s%s count=%d,unique=%d %s" % (
-                type, repo.name.replace(".", ""), org, labels, 0, 0, day.strftime('%s'))
+                type, repo.name, org, labels, 0, 0, day.strftime('%s'))
 
     for d in sorted(lines, key=lines.get):
         print(lines[d])
