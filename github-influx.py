@@ -13,13 +13,13 @@ def get_repo_stats(type, repo, days):
 
     today = datetime.datetime.utcnow().date()
     try:
-        if type == 'views':
-            stats = repo.get_views_traffic('day')
+        if type == "views":
+            stats = repo.get_views_traffic("day")
         else:
-            stats = repo.get_clones_traffic('day')
+            stats = repo.get_clones_traffic("day")
     except Exception as e:
         # skip repos with missing permissions
-        print(f'Failed to get stats from repo {repo} {e}', file=sys.stderr)
+        print(f"Failed to get stats from repo {repo} {e}", file=sys.stderr)
         return
 
     lines = {}
@@ -31,20 +31,38 @@ def get_repo_stats(type, repo, days):
     # process day by day
     while days >= 0:
         day = today - datetime.timedelta(days)
-        days = days-1
+        days = days - 1
 
         for s in stats[type]:
             time = datetime.datetime.strptime(str(s.timestamp), "%Y-%m-%d %H:%M:%S")
 
-            if time.strftime('%Y-%m-%d') != day.strftime('%Y-%m-%d'):
+            if time.strftime("%Y-%m-%d") != day.strftime("%Y-%m-%d"):
                 continue
 
-            lines[time.strftime('%s')] = "github_%s,repo=%s,org=%s%s count=%d,unique=%d %s" % (
-                type, repo.name, org, labels, s.count, s.uniques, time.strftime('%s'))
+            lines[
+                time.strftime("%s")
+            ] = "github_%s,repo=%s,org=%s%s count=%d,unique=%d %s" % (
+                type,
+                repo.name,
+                org,
+                labels,
+                s.count,
+                s.uniques,
+                time.strftime("%s"),
+            )
         # fill with 0 values
-        if day.strftime('%s') not in lines:
-            lines[day.strftime('%s')] = "github_%s,repo=%s,org=%s%s count=%d,unique=%d %s" % (
-                type, repo.name, org, labels, 0, 0, day.strftime('%s'))
+        if day.strftime("%s") not in lines:
+            lines[
+                day.strftime("%s")
+            ] = "github_%s,repo=%s,org=%s%s count=%d,unique=%d %s" % (
+                type,
+                repo.name,
+                org,
+                labels,
+                0,
+                0,
+                day.strftime("%s"),
+            )
 
     for d in sorted(lines, key=lines.get):
         print(lines[d])
@@ -53,21 +71,21 @@ def get_repo_stats(type, repo, days):
 # loops over repos and gets clones stats
 def get_clones(g, days):
     for repo in g.get_user().get_repos():
-        get_repo_stats('clones', repo, days)
+        get_repo_stats("clones", repo, days)
 
 
 # loops over repos and gets views stats
 def get_traffic(g, days):
     for repo in g.get_user().get_repos():
-        get_repo_stats('views', repo, days)
+        get_repo_stats("views", repo, days)
 
 
 if __name__ == "__main__":
     token = os.environ["GITHUB_TOKEN"]
     if not token:
-        print('Environment variable GITHUB_TOKEN is required')
-        print('Use a personal token you can generate in:')
-        print('GitHub -> Settings -> Developer Settings -> Personal access tokens')
+        print("Environment variable GITHUB_TOKEN is required")
+        print("Use a personal token you can generate in:")
+        print("GitHub -> Settings -> Developer Settings -> Personal access tokens")
         exit(1)
     if "GITHUB_DAYS" in os.environ:
         days = int(os.environ["GITHUB_DAYS"])
@@ -80,7 +98,7 @@ if __name__ == "__main__":
         get_traffic(g, days)
         get_clones(g, days)
     else:
-        if sys.argv[1] == '--traffic':
+        if sys.argv[1] == "--traffic":
             get_traffic(g, days)
-        if sys.argv[1] == '--clones':
+        if sys.argv[1] == "--clones":
             get_clones(g, days)
