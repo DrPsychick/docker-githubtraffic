@@ -80,7 +80,7 @@ def get_traffic(g, days):
         get_repo_stats("views", repo, days)
 
 
-def get_asset_stats(repo, days):
+def get_asset_stats(repo):
     labels = ""
     if "INFLUX_LABELS" in os.environ and os.environ["INFLUX_LABELS"] != "":
         labels = "," + os.environ["INFLUX_LABELS"]
@@ -97,14 +97,12 @@ def get_asset_stats(repo, days):
         if (today - rel_time).days > 365:
             # print("Skipping release older than 1 year")
             continue
-
         # print(vars(r))
         # print(f"Repo {repo.name} Release {r.title} {r.tag_name} {r.published_at}")
 
         for a in r.assets:
             # print(vars(a))
             # print(f"Asset {a.name} = {a.download_count}")
-
             lines.append("github_releases,repo=%s,org=%s%s downloads=%d %s" % (
                 repo.name,
                 org,
@@ -117,9 +115,9 @@ def get_asset_stats(repo, days):
         print(l)
 
 
-def get_releases(g, days):
+def get_releases(g):
     for repo in g.get_user().get_repos():
-        get_asset_stats(repo, days)
+        get_asset_stats(repo)
 
 
 if __name__ == "__main__":
@@ -139,10 +137,11 @@ if __name__ == "__main__":
     if len(sys.argv) == 1:
         get_traffic(g, days)
         get_clones(g, days)
+        get_releases(g)
     else:
         if sys.argv[1] == "--traffic":
             get_traffic(g, days)
         if sys.argv[1] == "--clones":
             get_clones(g, days)
         if sys.argv[1] == "--releases":
-            get_releases(g, days)
+            get_releases(g)
