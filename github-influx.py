@@ -106,7 +106,7 @@ def get_asset_stats(repo):
             lines.append("github_releases,repo=%s,org=%s%s downloads=%d %s" % (
                 repo.name,
                 org,
-                f"{labels},release={r.tag_name}",
+                f"{labels},release={r.tag_name},asset={a.name}",
                 a.download_count,
                 today.strftime("%s"),
             ))
