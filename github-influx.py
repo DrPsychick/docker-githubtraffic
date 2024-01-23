@@ -34,7 +34,7 @@ def get_repo_stats(type, repo, days):
         days = days - 1
 
         for s in stats[type]:
-            time = datetime.datetime.strptime(str(s.timestamp), "%Y-%m-%d %H:%M:%S")
+            time = datetime.datetime.strptime(str(s.timestamp), "%Y-%m-%d %H:%M:%S+00:00")
 
             if time.strftime("%Y-%m-%d") != day.strftime("%Y-%m-%d"):
                 continue
@@ -85,7 +85,7 @@ def get_asset_stats(repo):
     if "INFLUX_LABELS" in os.environ and os.environ["INFLUX_LABELS"] != "":
         labels = "," + os.environ["INFLUX_LABELS"]
 
-    today = datetime.datetime.utcnow()
+    today = datetime.datetime.today()
     org = None
     if repo.organization is not None:
         org = repo.organization.name
