@@ -114,21 +114,21 @@ def get_repo_popularity(repo):
         org = repo.organization.name
 
     lines = []
-    lines.append("github_releases,repo=%s,org=%s%s stars=%d %s" % (
+    lines.append("github_popularity,repo=%s,org=%s%s stars=%d %s" % (
         repo.name,
         org,
         labels,
         repo.stargazers_count,
         today.strftime("%s"),
     ))
-    lines.append("github_releases,repo=%s,org=%s%s watchers=%d %s" % (
+    lines.append("github_popularity,repo=%s,org=%s%s watchers=%d %s" % (
         repo.name,
         org,
         labels,
         repo.watchers_count,
         today.strftime("%s"),
     ))
-    lines.append("github_releases,repo=%s,org=%s%s forks=%d %s" % (
+    lines.append("github_popularity,repo=%s,org=%s%s forks=%d %s" % (
         repo.name,
         org,
         labels,
