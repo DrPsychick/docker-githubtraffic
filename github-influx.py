@@ -68,18 +68,6 @@ def get_repo_stats(type, repo, days):
         print(lines[d])
 
 
-# loops over repos and gets clones stats
-def get_clones(g, days):
-    for repo in g.get_user().get_repos():
-        get_repo_stats("clones", repo, days)
-
-
-# loops over repos and gets views stats
-def get_traffic(g, days):
-    for repo in g.get_user().get_repos():
-        get_repo_stats("views", repo, days)
-
-
 def get_asset_stats(repo):
     labels = ""
     if "INFLUX_LABELS" in os.environ and os.environ["INFLUX_LABELS"] != "":
@@ -115,9 +103,62 @@ def get_asset_stats(repo):
         print(l)
 
 
+def get_repo_popularity(repo):
+    labels = ""
+    if "INFLUX_LABELS" in os.environ and os.environ["INFLUX_LABELS"] != "":
+        labels = "," + os.environ["INFLUX_LABELS"]
+
+    today = datetime.datetime.today()
+    org = None
+    if repo.organization is not None:
+        org = repo.organization.name
+
+    lines = []
+    lines.append("github_releases,repo=%s,org=%s%s stars=%d %s" % (
+        repo.name,
+        org,
+        labels,
+        repo.stargazers_count,
+        today.strftime("%s"),
+    ))
+    lines.append("github_releases,repo=%s,org=%s%s watchers=%d %s" % (
+        repo.name,
+        org,
+        labels,
+        repo.watchers_count,
+        today.strftime("%s"),
+    ))
+    lines.append("github_releases,repo=%s,org=%s%s forks=%d %s" % (
+        repo.name,
+        org,
+        labels,
+        repo.forks_count,
+        today.strftime("%s"),
+    ))
+
+    for l in lines:
+        print(l)
+
+# loops over repos and gets clones stats
+def get_clones(g, days):
+    for repo in g.get_user().get_repos():
+        get_repo_stats("clones", repo, days)
+
+
+# loops over repos and gets views stats
+def get_traffic(g, days):
+    for repo in g.get_user().get_repos():
+        get_repo_stats("views", repo, days)
+
+
 def get_releases(g):
     for repo in g.get_user().get_repos():
         get_asset_stats(repo)
+
+
+def get_popularity(g):
+    for repo in g.get_user().get_repos():
+        get_repo_popularity(repo)
 
 
 if __name__ == "__main__":
@@ -138,6 +179,7 @@ if __name__ == "__main__":
         get_traffic(g, days)
         get_clones(g, days)
         get_releases(g)
+        get_popularity(g)
     else:
         if sys.argv[1] == "--traffic":
             get_traffic(g, days)
@@ -145,3 +187,5 @@ if __name__ == "__main__":
             get_clones(g, days)
         if sys.argv[1] == "--releases":
             get_releases(g)
+        if sys.argv[1] == "--popularity":
+            get_popularity(g)
