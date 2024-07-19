@@ -41,7 +41,7 @@ def get_repo_stats(type, repo, days):
 
             lines[
                 time.strftime("%s")
-            ] = "github_%s,repo=%s,org=%s%s count=%d,unique=%d %s" % (
+            ] = "github_%s,repo=%s,org=\"%s\"%s count=%d,unique=%d %s" % (
                 type,
                 repo.name,
                 org,
@@ -54,7 +54,7 @@ def get_repo_stats(type, repo, days):
         if day.strftime("%s") not in lines:
             lines[
                 day.strftime("%s")
-            ] = "github_%s,repo=%s,org=%s%s count=%d,unique=%d %s" % (
+            ] = "github_%s,repo=%s,org=\"%s\"%s count=%d,unique=%d %s" % (
                 type,
                 repo.name,
                 org,
@@ -91,7 +91,7 @@ def get_asset_stats(repo):
         for a in r.assets:
             # print(vars(a))
             # print(f"Asset {a.name} = {a.download_count}")
-            lines.append("github_releases,repo=%s,org=%s%s downloads=%d %s" % (
+            lines.append("github_releases,repo=%s,org=\"%s\"%s downloads=%d %s" % (
                 repo.name,
                 org,
                 f"{labels},release={r.tag_name},asset={a.name}",
@@ -114,21 +114,21 @@ def get_repo_popularity(repo):
         org = repo.organization.name
 
     lines = []
-    lines.append("github_popularity,repo=%s,org=%s%s stars=%d %s" % (
+    lines.append("github_popularity,repo=%s,org=\"%s\"%s stars=%d %s" % (
         repo.name,
         org,
         labels,
         repo.stargazers_count,
         today.strftime("%s"),
     ))
-    lines.append("github_popularity,repo=%s,org=%s%s watchers=%d %s" % (
+    lines.append("github_popularity,repo=%s,org=\"%s\"%s watchers=%d %s" % (
         repo.name,
         org,
         labels,
         repo.watchers_count,
         today.strftime("%s"),
     ))
-    lines.append("github_popularity,repo=%s,org=%s%s forks=%d %s" % (
+    lines.append("github_popularity,repo=%s,org=\"%s\"%s forks=%d %s" % (
         repo.name,
         org,
         labels,
