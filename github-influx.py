@@ -11,6 +11,12 @@ labels = ""
 def get_repo_stats(type, repo, days):
     global blacklist, labels
 
+    org = "None"
+    if repo.organization is not None:
+        org = repo.organization.name
+    if org in blacklist:
+        return
+
     today = datetime.datetime.utcnow().date()
     try:
         if type == "views":
@@ -23,12 +29,6 @@ def get_repo_stats(type, repo, days):
         return
 
     lines = {}
-
-    org = "None"
-    if repo.organization is not None:
-        org = repo.organization.name
-    if org in blacklist:
-        return
 
     # process day by day
     while days >= 0:
@@ -164,8 +164,6 @@ def get_popularity(g):
 
 
 if __name__ == "__main__":
-    global blacklist,labels
-
     token = os.environ["GITHUB_TOKEN"]
     if not token:
         print("Environment variable GITHUB_TOKEN is required")
