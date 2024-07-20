@@ -5,11 +5,11 @@ import sys
 import datetime
 from github import Github
 
+blacklist = []
+labels = ""
 
 def get_repo_stats(type, repo, days):
-    labels = ""
-    if "INFLUX_LABELS" in os.environ and os.environ["INFLUX_LABELS"] != "":
-        labels = "," + os.environ["INFLUX_LABELS"]
+    global blacklist, labels
 
     today = datetime.datetime.utcnow().date()
     try:
@@ -27,6 +27,8 @@ def get_repo_stats(type, repo, days):
     org = "None"
     if repo.organization is not None:
         org = repo.organization.name
+    if org in blacklist:
+        return
 
     # process day by day
     while days >= 0:
@@ -69,14 +71,14 @@ def get_repo_stats(type, repo, days):
 
 
 def get_asset_stats(repo):
-    labels = ""
-    if "INFLUX_LABELS" in os.environ and os.environ["INFLUX_LABELS"] != "":
-        labels = "," + os.environ["INFLUX_LABELS"]
+    global blacklist, labels
 
     today = datetime.datetime.today()
     org = None
     if repo.organization is not None:
         org = repo.organization.name
+    if org in blacklist:
+        return
 
     rel = repo.get_releases()
     lines = []
@@ -104,14 +106,14 @@ def get_asset_stats(repo):
 
 
 def get_repo_popularity(repo):
-    labels = ""
-    if "INFLUX_LABELS" in os.environ and os.environ["INFLUX_LABELS"] != "":
-        labels = "," + os.environ["INFLUX_LABELS"]
+    global blacklist, labels
 
     today = datetime.datetime.today()
     org = None
     if repo.organization is not None:
         org = repo.organization.name
+    if org in blacklist:
+        return
 
     lines = []
     lines.append("github_popularity,repo=%s,org=\"%s\"%s stars=%d %s" % (
@@ -162,6 +164,8 @@ def get_popularity(g):
 
 
 if __name__ == "__main__":
+    global blacklist,labels
+
     token = os.environ["GITHUB_TOKEN"]
     if not token:
         print("Environment variable GITHUB_TOKEN is required")
@@ -172,6 +176,14 @@ if __name__ == "__main__":
         days = int(os.environ["GITHUB_DAYS"])
     else:
         days = 3
+
+    labels = ""
+    if "INFLUX_LABELS" in os.environ and os.environ["INFLUX_LABELS"] != "":
+        labels = "," + os.environ["INFLUX_LABELS"]
+
+    blacklist = []
+    if "INFLUX_ORG_BLACKLIST" in os.environ and os.environ["INFLUX_ORG_BLACKLIST"] != "":
+        blacklist = os.environ["INFLUX_ORG_BLACKLIST"].split(",")
 
     g = Github(token)
 
