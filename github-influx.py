@@ -80,26 +80,30 @@ def get_asset_stats(repo):
     if org in blacklist:
         return
 
-    rel = repo.get_releases()
-    lines = []
-    for r in rel:
-        rel_time = datetime.datetime.strptime(str(r.published_at), "%Y-%m-%d %H:%M:%S+00:00")
-        if (today - rel_time).days > 365:
-            # print("Skipping release older than 1 year")
-            continue
-        # print(vars(r))
-        # print(f"Repo {repo.name} Release {r.title} {r.tag_name} {r.published_at}")
+    try:
+        rel = repo.get_releases()
+        lines = []
+        for r in rel:
+            rel_time = datetime.datetime.strptime(str(r.published_at), "%Y-%m-%d %H:%M:%S+00:00")
+            if (today - rel_time).days > 365:
+                # print("Skipping release older than 1 year")
+                continue
+            # print(vars(r))
+            # print(f"Repo {repo.name} Release {r.title} {r.tag_name} {r.published_at}")
 
-        for a in r.assets:
-            # print(vars(a))
-            # print(f"Asset {a.name} = {a.download_count}")
-            lines.append("github_releases,repo=%s,org=\"%s\"%s downloads=%d %s" % (
-                repo.name,
-                org,
-                f"{labels},release={r.tag_name},asset={a.name}",
-                a.download_count,
-                today.strftime("%s"),
-            ))
+            for a in r.assets:
+                # print(vars(a))
+                # print(f"Asset {a.name} = {a.download_count}")
+                lines.append("github_releases,repo=%s,org=\"%s\"%s downloads=%d %s" % (
+                    repo.name,
+                    org,
+                    f"{labels},release={r.tag_name},asset={a.name}",
+                    a.download_count,
+                    today.strftime("%s"),
+                ))
+    except Exception as e:
+        print(f"Failed to get asset stats from repo {repo} {e}", file=sys.stderr)
+        return
 
     for l in lines:
         print(l)
