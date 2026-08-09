@@ -22,9 +22,10 @@ jobs:
           tags: drpsychick/githubtraffic:test
           push: false
           load: true
-      - name: Test image
-        uses: addnab/docker-run-action@v3
-        with:
-          image: drpsychick/githubtraffic:test
-          run: "/bin/sh /github-influx.sh"
-          options: "-e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}"
+# FIXME: disabled test, because it requires a GitHub token with elevated (user) privileges
+#      - name: Test image
+#        uses: addnab/docker-run-action@v3
+#        with:
+#          image: drpsychick/githubtraffic:test
+#          run: "/bin/sh /github-influx.sh"
+#          options: "-e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}"
