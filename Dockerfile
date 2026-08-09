@@ -1,5 +1,8 @@
 ARG PYTHON_VERSION=alpine3.17
 FROM python:$PYTHON_VERSION AS builder
+LABEL org.opencontainers.image.authors="drpsychick@drsick.net"
+LABEL org.opencontainers.image.description="Report GitHub API traffic to InfluxDB"
+LABEL org.opencontainers.image.source="https://github.com/DrPsychick/docker-githubtraffic"
 
 RUN apk --no-cache add curl gcc musl-dev libffi-dev make jq
 
